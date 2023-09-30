@@ -1,5 +1,7 @@
 <?php
 
+    //arrange wbs leafs into a tree like array structure
+
     $arr = [
         [
             [
@@ -51,14 +53,13 @@
 
     function searchForNode(&$newArr, $node) {
         foreach($newArr as &$currNode) {
-            // var_dump($currNode);
             if($node["father_id"] == $currNode["id"]) {
-                if(!in_array($node["id"], array_column($currNode, "id"))) {
+                if(!in_array($node["id"], array_column($currNode["children"], "id"))) {
                     $currNode["children"][] = ["id" => $node["id"], "children" => []];
                 }
             }
             else {
-                searchForNode($currNode["chilren"], $node);
+                searchForNode($currNode["children"], $node);
             }
         }
     }
@@ -66,24 +67,14 @@
     $newArr = [];
     foreach($arr as $subArr) {
         foreach($subArr as $node) {
-            if($node["father_id"] == null) {
-                $found = false;
-                foreach($newArr as $newSubArr) {
-                    if($newSubArr["id"] == $node["id"]) {
-                        $found = true;
-                        break;
-                    }
-                }
-                if(!$found) {
-                    $newArr[] = [
-                        "id" => $node["id"],
-                        "children" => []
-                    ];
-                }
-            }
-            else {
-                searchForNode($newArr, $node);
-            } 
+            if($node["father_id"] == null && !in_array($node["id"], array_column($newArr, "id"))) {
+                $newArr[] = [
+                    "id" => $node["id"],
+                    "children" => []
+                ];
+                continue;
+            }             
+            searchForNode($newArr, $node); 
         }
     }
 
